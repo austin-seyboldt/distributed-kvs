@@ -76,10 +76,6 @@ $ docker run -p 13803:13800                                                     
 
 #### GET key count for a node and the stored replicas
 
-- To get the total number of keys stored by a node, the shards it stores, and the number of keys per shard, send a GET request to the endpoint, **/kvs/key-count** at any node.
-
-    - On success, the response should have status code 200. This example sends the request to node1.
-
     ```bash
     $ curl --request   GET                                        \
            --header    "Content-Type: application/json"           \
@@ -96,10 +92,6 @@ $ docker run -p 13803:13800                                                     
 
 #### GET ID for each shard
 
-- To get information for all shards, send a GET request to the endpoint, **/kvs/shards** at any node. The response should contain the id of each shard.
-
-    - On success, the response should have status code 200.
-
     ```bash
     $ curl --request   GET                                        \
            --header    "Content-Type: application/json"           \
@@ -114,10 +106,6 @@ $ docker run -p 13803:13800                                                     
     ```
 
 #### GET information for a specific shard
-
-- To get the number of keys stored by a shard and what node each replica is stored on, send a GET request to the endpoint, **/kvs/shards/\<shard-id\>** at any node.
-
-    - On success, the response should have status code 200.
 
     ```bash
     $ curl --request   GET                                        \
@@ -174,9 +162,7 @@ $ docker run -p 13803:13800                                                     
     
         - {"error":"Unable to satisfy request","message":"Error in GET"}
 
-- For the below operation descriptions, it is assumed that shard1 (containing node1 and node2) does not store **sampleKey**, and that shard2 (containing node3 and node4) does store **sampleKey**.
-
-#### Insert new key
+#### Insert/Update a key
 
 - To insert a key named sampleKey, send a PUT request to **/kvs/keys/sampleKey** and include the causal context object as JSON.
 
@@ -196,67 +182,7 @@ $ docker run -p 13803:13800                                                     
            }
            400
     ```
-
-    - If the key has length greater than 50, the key-value store should respond with status code 400.  
     
-    ```bash
-    $ curl --request   PUT                                                              \
-           --header    "Content-Type: application/json"                                 \
-           --write-out "%{http_code}\n"                                                 \
-           --data      '{"value":"sampleValue","causal-context":causal-context-object}' \
-           http://127.0.0.1:13800/kvs/keys/loooooooooooooooooooooooooooooooooooooooooooooooong
-
-           {
-               "message"       : "Error in PUT",
-               "error"         : "Key is too long",
-               "address"       : "10.10.0.4:13800",
-               "causal-context": new-causal-context-object,
-           }
-           400
-    ```
-
-    - On success, the key-value store should respond with status code 201. This example sends the request to node1.
-
-    ```bash
-    $ curl --request   PUT                                                              \
-           --header    "Content-Type: application/json"                                 \
-           --write-out "%{http_code}\n"                                                 \
-           --data      '{"value":"sampleValue","causal-context":causal-context-object}' \
-           http://127.0.0.1:13800/kvs/keys/sampleKey
-
-           {
-               "message"       : "Added successfully",
-               "replaced"      : false,
-               "address"       : "10.10.0.4:13800",
-               "causal-context": new-causal-context-object,
-           }
-           201
-    ```
-
-#### Update existing key
-
-- To update an existing key named sampleKey, send a PUT request to /kvs/keys/sampleKey and include the causal context object as JSON.
-  
-    - If no updated value is provided for the key, the key-value store should respond with status code 400. This example sends the request to node1.
-
-    ```bash
-    $ curl --request   PUT                                        \
-           --header    "Content-Type: application/json"           \
-           --write-out "%{http_code}\n"                           \
-           --data      '{"causal-context":causal-context-object}' \
-           http://127.0.0.1:13800/kvs/keys/sampleKey
-
-           {
-               "message"       : "Error in PUT",
-               "error"         : "Value is missing",
-               "address"       : "10.10.0.4:13800",
-               "causal-context": new-causal-context-object,
-           }
-           400
-    ```
-    
-    - The key-value store should respond with status code 200. This example sends the request to node3.
-
     ```bash
     $ curl --request   PUT                                                              \
            --header    "Content-Type: application/json"                                 \
